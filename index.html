@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentalHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f8f9fa; color: #2c3e50; }
+        nav { background: #667eea; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        nav h1 { font-size: 1.8rem; }
+        nav a { color: white; cursor: pointer; padding: 0.5rem 1rem; }
+        nav a:hover { background: rgba(0,0,0,0.2); border-radius: 5px; }
+        .status { padding: 1rem; text-align: center; background: #27ae60; color: white; font-weight: bold; }
+        .container { max-width: 600px; margin: 2rem auto; padding: 2rem; }
+        .hidden { display: none !important; }
+        .form-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { margin-bottom: 1.5rem; }
+        h3 { margin-top: 1.5rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .password-group { position: relative; }
+        .password-toggle { position: absolute; right: 15px; top: 35px; background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+        button { width: 100%; padding: 0.8rem; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 1rem; }
+        button:hover { background: #764ba2; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #229954; }
+        .error-msg { background: #fee; color: #c33; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; border-left: 4px solid #c33; display: none; }
+        .error-msg.show { display: block; }
+        .info-box { background: #e3f2fd; color: #1565c0; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; border-left: 4px solid #1565c0; }
+        .warning-box { background: #fff3cd; color: #856404; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; border-left: 4px solid #ff9800; }
+        a { color: #667eea; text-decoration: underline; cursor: pointer; }
+        .hero { background: #667eea; color: white; padding: 3rem 2rem; text-align: center; border-radius: 10px; margin-bottom: 2rem; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
+        .properties { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .card { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card h3 { margin-bottom: 0.5rem; }
+        .price { color: #27ae60; font-weight: bold; font-size: 1.2rem; }
+        .profile-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; }
+        .profile-card h3 { color: white; }
+        .badge { display: inline-block; background: #ff9800; color: white; padding: 0.5rem 1rem; border-radius: 5px; font-weight: bold; margin: 0.5rem 0; }
+        .badge.verified { background: #27ae60; }
+        .badge.unverified { background: #e74c3c; }
+        .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+        .tab-btn { padding: 1rem; background: #ecf0f1; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .tab-btn.active { background: #667eea; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; max-width: 500px; text-align: center; }
+        .modal-content h2 { color: #667eea; }
+        .modal-content p { margin: 1rem 0; }
+        .modal-content button { margin-top: 1rem; }
+        .prop-count { background: #ecf0f1; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; text-align: center; }
+        .agent-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 5px; font-size: 0.85rem; font-weight: bold; margin-left: 0.5rem; }
+        .agent-badge.verified { background: #27ae60; color: white; }
+        .agent-badge.unverified { background: #e74c3c; color: white; }
+    </style>
+</head>
+<body>
+    <div class="status">✓ Ready to Use</div>
+
+```
+<nav id="nav" class="hidden">
+    <h1>🏠 RentalHub</h1>
+    <div>
+        <a onclick="goHome()">Home</a>
+        <a id="profileLink" onclick="showProfile()" class="hidden">Profile</a>
+        <a id="propertiesLink" onclick="showProperties()" class="hidden">Properties</a>
+        <a id="searchLink" onclick="showSearch()" class="hidden">Search</a>
+        <a onclick="logout()" style="background: #e74c3c; border-radius: 5px;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- HOME PAGE -->
+    <div id="homePage">
+        <div class="hero">
+            <h1>🏠 RentalHub</h1>
+            <p>Find Your Perfect Home</p>
+            <div class="button-group">
+                <button class="btn-success" onclick="showAgentSignup()">Agent</button>
+                <button class="btn-success" onclick="showRenterSignup()">Renter</button>
+            </div>
+            <div style="margin-top: 1rem;">
+                <p>Have account? <a onclick="showLogin()">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="hidden">
+        <div class="form-container">
+            <h2>Login</h2>
+            <div id="loginError" class="error-msg"></div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="your@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-group">
+                    <input type="password" id="loginPassword" placeholder="password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">👁️</button>
+                </div>
+            </div>
+            <button onclick="handleLogin()">Login</button>
+            <div style="margin-top: 1rem; text-align: center;">
+                <p>No account? <a onclick="showAgentSignup()">Agent</a> or <a onclick="showRenterSignup()">Renter</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AGENT SIGNUP PAGE -->
+    <div id="agentSignupPage" class="hidden">
+        <div class="form-container">
+            <h2>Agent Registration</h2>
+            <div id="agentError" class="error-msg"></div>
+            
+            <div class="info-box">
+                <strong>📋 Why Government ID?</strong>
+                <p>We verify government-issued IDs to ensure trust and safety in our community. This protects renters from fraudulent listings and builds confidence in our platform.</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="agentName" placeholder="Your Name">
+            </div>
+            <div class="form-group">
+                <label>Gmail</label>
+                <input type="email" id="agentEmail" placeholder="your@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Password (6+ chars)</label>
+                <div class="password-group">
+                    <input type="password" id="agentPassword" placeholder="password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('agentPassword')">👁️</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>State</label>
+                <select id="agentState">
+                    <option value="">Select State</option>
+                    <option value="Lagos">Lagos</option>
+                    <option value="Abuja">Abuja</option>
+                    <option value="Oyo">Oyo</option>
+                    <option value="Rivers">Rivers</option>
+                    <option value="Kaduna">Kaduna</option>
+                    <option value="Kano">Kano</option>
+                    <option value="Enugu">Enugu</option>
+                </select>
+            </div>
+
+            <button class="btn-success" onclick="registerAgent()">Create Account</button>
+            <div style="margin-top: 1rem; text-align: center;">
+                <p>Have account? <a onclick="showLogin()">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RENTER SIGNUP PAGE -->
+    <div id="renterSignupPage" class="hidden">
+        <div class="form-container">
+            <h2>Renter Registration</h2>
+            <div id="renterError" class="error-msg"></div>
+            
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="renterName" placeholder="Your Name">
+            </div>
+            <div class="form-group">
+                <label>Gmail</label>
+                <input type="email" id="renterEmail" placeholder="your@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Password (6+ chars)</label>
+                <div class="password-group">
+                    <input type="password" id="renterPassword" placeholder="password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('renterPassword')">👁️</button>
+                </div>
+            </div>
+
+            <button class="btn-success" onclick="registerRenter()">Create Account</button>
+            <div style="margin-top: 1rem; text-align: center;">
+                <p>Have account? <a onclick="showLogin()">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AGENT PROFILE PAGE -->
+    <div id="profilePage" class="hidden">
+        <h1>Agent Profile</h1>
+        <div class="profile-card">
+            <h3 id="profileName">Loading...</h3>
+            <p id="profileEmail"></p>
+            <p id="profilePhone"></p>
+            <p id="profileState"></p>
+            <div style="margin-top: 1rem;">
+                <div id="verificationBadge" class="badge">⏳ Pending Verification</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('details')">Details</button>
+            <button class="tab-btn" onclick="switchTab('govid')">Govt ID</button>
+        </div>
+
+        <div id="detailsTab" class="tab-content active">
+            <div class="form-container">
+                <h3>My Details</h3>
+                <p><strong>Name:</strong> <span id="detailName"></span></p>
+                <p><strong>Email:</strong> <span id="detailEmail"></span></p>
+                <p><strong>Phone:</strong> <span id="detailPhone"></span></p>
+                <p><strong>State:</strong> <span id="detailState"></span></p>
+            </div>
+        </div>
+
+        <div id="govidTab" class="tab-content">
+            <div class="form-container">
+                <div class="info-box">
+                    <strong>📋 Government ID Verification</strong>
+                    <p>Upload a valid government-issued ID (Driver's License, National ID, Passport, or Voter's Card) to get verified. This helps renters trust your listings.</p>
+                </div>
+                <h3>Verification Status: <span id="govidStatus" style="color: #ff9800;">Pending</span></h3>
+                <div class="form-group">
+                    <label>Upload Government ID</label>
+                    <input type="file" id="govidFile" accept="image/*">
+                </div>
+                <button class="btn-success" onclick="uploadGovID()">Upload ID</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AGENT PROPERTIES PAGE -->
+    <div id="propertiesPage" class="hidden">
+        <h1>My Properties</h1>
+        
+        <div class="prop-count">
+            <p><strong id="propCount">0</strong> / 3 Properties Listed</p>
+        </div>
+
+        <button id="addPropBtn" class="btn-success" onclick="toggleAddForm()" style="margin-bottom: 2rem;">+ Add Property</button>
+
+        <div id="addForm" class="hidden">
+            <div class="form-container" style="margin-bottom: 2rem;">
+                <h2>Add New Property</h2>
+                <div id="propError" class="error-msg"></div>
+                
+                <div class="form-group">
+                    <label>Property Title</label>
+                    <input type="text" id="propTitle" placeholder="e.g., Beautiful 2-Bedroom Apartment">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="propLocation" placeholder="e.g., Victoria Island, Lagos">
+                </div>
+                <div class="form-group">
+                    <label>Price (₦)</label>
+                    <input type="number" id="propPrice" placeholder="500000">
+                </div>
+                <div class="form-group">
+                    <label>Bedrooms</label>
+                    <input type="number" id="propBeds" placeholder="2" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Bathrooms</label>
+                    <input type="number" id="propBaths" placeholder="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="propDesc" placeholder="Describe the property in detail" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Property Picture</label>
+                    <input type="file" id="propImage" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Property Video</label>
+                    <input type="file" id="propVideo" accept="video/*">
+                </div>
+
+                <button class="btn-success" onclick="addProperty()">Save Property</button>
+            </div>
+        </div>
+
+        <h2>Your Properties</h2>
+        <div id="agentList" class="properties"></div>
+    </div>
+
+    <!-- RENTER SEARCH PAGE -->
+    <div id="searchPage" class="hidden">
+        <h1>Find Properties</h1>
+        
+        <div class="warning-box">
+            <strong>⚠️ Safety Warning:</strong> Always verify that agents are <span style="color: #27ae60; font-weight: bold;">✓ VERIFIED</span>. Unverified agents have not been vetted. Only use verified agents to protect yourself from fraud!
+        </div>
+
+        <h2>Available Properties</h2>
+        <div id="renterList" class="properties"></div>
+
+        <h2 style="margin-top: 3rem;">Filter Properties</h2>
+        <div class="form-container" style="margin-bottom: 2rem;">
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="filterLoc" placeholder="Search location" onchange="filterProps()">
+            </div>
+            <div class="form-group">
+                <label>Min Price</label>
+                <input type="number" id="filterMin" placeholder="Min" onchange="filterProps()">
+            </div>
+            <div class="form-group">
+                <label>Max Price</label>
+                <input type="number" id="filterMax" placeholder="Max" onchange="filterProps()">
+            </div>
+            <div class="form-group">
+                <label>Bedrooms</label>
+                <select id="filterBeds" onchange="filterProps()">
+                    <option value="">Any</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4+</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div id="upgradeModal" class="modal">
+    <div class="modal-content">
+        <h2>Upgrade Required</h2>
+        <p style="font-size: 1.2rem; color: #e74c3c;">You've reached the free limit of 3 properties</p>
+        <p>Upgrade your account to list more properties and reach more renters!</p>
+        <p style="margin-top: 2rem; font-weight: bold; color: #667eea;">Coming Soon: Premium Plans</p>
+        <button onclick="closeUpgradeModal()">OK</button>
+    </div>
+</div>
+
+<script>
+    // Database
+    var DB = {
+        getUsers: function() {
+            var data = localStorage.getItem('users');
+            return data ? JSON.parse(data) : [];
+        },
+        saveUser: function(user) {
+            var users = this.getUsers();
+            var exists = false;
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].email === user.email) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                users.push(user);
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        },
+        updateUser: function(uid, updates) {
+            var users = this.getUsers();
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].uid === uid) {
+                    users[i] = Object.assign(users[i], updates);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    break;
+                }
+            }
+        },
+        findUser: function(email, password) {
+            var users = this.getUsers();
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].email === email && users[i].password === password) {
+                    return users[i];
+                }
+            }
+            return null;
+        },
+        getProps: function() {
+            var data = localStorage.getItem('properties');
+            return data ? JSON.parse(data) : [];
+        },
+        saveProp: function(prop) {
+            var props = this.getProps();
+            props.push(prop);
+            localStorage.setItem('properties', JSON.stringify(props));
+        },
+        getAgentProps: function(uid) {
+            var props = this.getProps();
+            var result = [];
+            for (var i = 0; i < props.length; i++) {
+                if (props[i].agentId === uid) {
+                    result.push(props[i]);
+                }
+            }
+            return result;
+        }
+    };
+
+    // Global State
+    var currentUser = null;
+    var currentType = null;
+    var allProperties = [];
+
+    // PASSWORD TOGGLE
+    function togglePassword(inputId) {
+        var input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+        } else {
+            input.type = 'password';
+        }
+    }
+
+    // PAGE NAVIGATION
+    function showPage(pageName) {
+        document.getElementById('homePage').classList.add('hidden');
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('agentSignupPage').classList.add('hidden');
+        document.getElementById('renterSignupPage').classList.add('hidden');
+        document.getElementById('profilePage').classList.add('hidden');
+        document.getElementById('propertiesPage').classList.add('hidden');
+        document.getElementById('searchPage').classList.add('hidden');
+
+        if (pageName === 'home') {
+            document.getElementById('homePage').classList.remove('hidden');
+            document.getElementById('nav').classList.add('hidden');
+        } else if (pageName === 'login') {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('nav').classList.add('hidden');
+        } else if (pageName === 'agentSignup') {
+            document.getElementById('agentSignupPage').classList.remove('hidden');
+            document.getElementById('nav').classList.add('hidden');
+        } else if (pageName === 'renterSignup') {
+            document.getElementById('renterSignupPage').classList.remove('hidden');
+            document.getElementById('nav').classList.add('hidden');
+        } else if (pageName === 'profile') {
+            document.getElementById('profilePage').classList.remove('hidden');
+            document.getElementById('nav').classList.remove('hidden');
+            loadProfile();
+        } else if (pageName === 'properties') {
+            document.getElementById('propertiesPage').classList.remove('hidden');
+            document.getElementById('nav').classList.remove('hidden');
+            loadAgentProps();
+        } else if (pageName === 'search') {
+            document.getElementById('searchPage').classList.remove('hidden');
+            document.getElementById('nav').classList.remove('hidden');
+            loadAllProps();
+            filterProps();
+        }
+    }
+
+    function showHome() { showPage('home'); }
+    function showLogin() { showPage('login'); }
+    function showAgentSignup() { showPage('agentSignup'); }
+    function showRenterSignup() { showPage('renterSignup'); }
+    function showProfile() { showPage('profile'); }
+    function showProperties() { showPage('properties'); }
+    function showSearch() { showPage('search'); }
+    function goHome() { showPage('home'); }
+
+    // TABS
+    function switchTab(tab) {
+        document.getElementById('detailsTab').classList.remove('active');
+        document.getElementById('govidTab').classList.remove('active');
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        
+        if (tab === 'details') {
+            document.getElementById('detailsTab').classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        } else {
+            document.getElementById('govidTab').classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        }
+    }
+
+    // LOGIN
+    function handleLogin() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var password = document.getElementById('loginPassword').value;
+
+        if (!email || !password) {
+            showError('loginError', 'Fill all fields');
+            return;
+        }
+
+        var user = DB.findUser(email, password);
+        if (user) {
+            currentUser = user;
+            currentType = user.userType;
+            
+            document.getElementById('nav').classList.remove('hidden');
+            if (currentType === 'agent') {
+                document.getElementById('profileLink').classList.remove('hidden');
+                document.getElementById('propertiesLink').classList.remove('hidden');
+                document.getElementById('searchLink').classList.add('hidden');
+                showProfile();
+            } else {
+                document.getElementById('searchLink').classList.remove('hidden');
+                document.getElementById('profileLink').classList.add('hidden');
+                document.getElementById('propertiesLink').classList.add('hidden');
+                showSearch();
+            }
+        } else {
+            showError('loginError', 'Invalid email or password');
+        }
+    }
+
+    // AGENT REGISTRATION
+    function registerAgent() {
+        var name = document.getElementById('agentName').value.trim();
+        var email = document.getElementById('agentEmail').value.trim();
+        var password = document.getElementById('agentPassword').value;
+        var state = document.getElementById('agentState').value;
+
+        if (!name || !email || !password || !state) {
+            showError('agentError', 'Fill all fields');
+            return;
+        }
+
+        if (password.length < 6) {
+            showError('agentError', 'Password must be 6+ characters');
+            return;
+        }
+
+        var user = {
+            uid: 'u_' + Date.now(),
+            name: name,
+            email: email,
+            password: password,
+            state: state,
+            phone: '',
+            govID: null,
+            verificationStatus: 'pending',
+            userType: 'agent'
+        };
+
+        DB.saveUser(user);
+        
+        // Auto-login after registration
+        currentUser = user;
+        currentType = 'agent';
+        
+        showError('agentError', 'Account created! Welcome!');
+        setTimeout(function() {
+            document.getElementById('nav').classList.remove('hidden');
+            document.getElementById('profileLink').classList.remove('hidden');
+            document.getElementById('propertiesLink').classList.remove('hidden');
+            document.getElementById('searchLink').classList.add('hidden');
+            showProfile();
+        }, 1000);
+    }
+
+    // RENTER REGISTRATION
+    function registerRenter() {
+        var name = document.getElementById('renterName').value.trim();
+        var email = document.getElementById('renterEmail').value.trim();
+        var password = document.getElementById('renterPassword').value;
+
+        if (!name || !email || !password) {
+            showError('renterError', 'Fill all fields');
+            return;
+        }
+
+        if (password.length < 6) {
+            showError('renterError', 'Password must be 6+ characters');
+            return;
+        }
+
+        var user = {
+            uid: 'u_' + Date.now(),
+            name: name,
+            email: email,
+            password: password,
+            userType: 'renter'
+        };
+
+        DB.saveUser(user);
+        
+        // Auto-login after registration
+        currentUser = user;
+        currentType = 'renter';
+        
+        showError('renterError', 'Account created! Welcome!');
+        setTimeout(function() {
+            document.getElementById('nav').classList.remove('hidden');
+            document.getElementById('searchLink').classList.remove('hidden');
+            document.getElementById('profileLink').classList.add('hidden');
+            document.getElementById('propertiesLink').classList.add('hidden');
+            showSearch();
+        }, 1000);
+    }
+
+    // AGENT PROFILE
+    function loadProfile() {
+        document.getElementById('profileName').textContent = currentUser.name;
+        document.getElementById('profileEmail').textContent = 'Email: ' + currentUser.email;
+        document.getElementById('profilePhone').textContent = 'Phone: ' + (currentUser.phone || 'Not added');
+        document.getElementById('profileState').textContent = 'State: ' + currentUser.state;
+        document.getElementById('verificationBadge').textContent = currentUser.verificationStatus === 'verified' ? '✓ Verified' : '⏳ Pending Verification';
+        document.getElementById('verificationBadge').className = 'badge ' + (currentUser.verificationStatus === 'verified' ? 'verified' : '');
+
+        document.getElementById('detailName').textContent = currentUser.name;
+        document.getElementById('detailEmail').textContent = currentUser.email;
+        document.getElementById('detailPhone').textContent = currentUser.phone || 'Not added';
+        document.getElementById('detailState').textContent = currentUser.state;
+        document.getElementById('govidStatus').textContent = currentUser.verificationStatus === 'verified' ? 'Verified ✓' : 'Pending';
+        document.getElementById('govidStatus').style.color = currentUser.verificationStatus === 'verified' ? '#27ae60' : '#ff9800';
+    }
+
+    // UPLOAD GOV ID
+    function uploadGovID() {
+        var file = document.getElementById('govidFile').files[0];
+        if (!file) {
+            alert('Please select a file');
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            currentUser.govID = e.target.result;
+            DB.updateUser(currentUser.uid, { govID: e.target.result });
+            alert('Government ID uploaded! Admin will verify within 24-48 hours.');
+            loadProfile();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // PROPERTIES
+    function toggleAddForm() {
+        var agentProps = DB.getAgentProps(currentUser.uid);
+        if (agentProps.length >= 3) {
+            showUpgradeModal();
+            return;
+        }
+        var form = document.getElementById('addForm');
+        if (form.classList.contains('hidden')) {
+            form.classList.remove('hidden');
+        } else {
+            form.classList.add('hidden');
+        }
+    }
+
+    function addProperty() {
+        var agentProps = DB.getAgentProps(currentUser.uid);
+        if (agentProps.length >= 3) {
+            showUpgradeModal();
+            return;
+        }
+
+        var title = document.getElementById('propTitle').value.trim();
+        var location = document.getElementById('propLocation').value.trim();
+        var price = document.getElementById('propPrice').value;
+        var beds = document.getElementById('propBeds').value;
+        var baths = document.getElementById('propBaths').value;
+        var desc = document.getElementById('propDesc').value.trim();
+        var imageFile = document.getElementById('propImage').files[0];
+        var videoFile = document.getElementById('propVideo').files[0];
+
+        if (!title || !location || !price || !beds || !baths || !desc || !imageFile) {
+            showError('propError', 'Fill all fields and add a picture');
+            return;
+        }
+
+        var prop = {
+            id: 'p_' + Date.now(),
+            title: title,
+            location: location,
+            price: parseInt(price),
+            bedrooms: parseInt(beds),
+            bathrooms: parseInt(baths),
+            description: desc,
+            agentId: currentUser.uid,
+            agentName: currentUser.name,
+            agentVerified: currentUser.verificationStatus === 'verified',
+            image: null,
+            video: null
+        };
+
+        var filesProcessed = 0;
+
+        var imgReader = new FileReader();
+        imgReader.onload = function(e) {
+            prop.image = e.target.result;
+            filesProcessed++;
+            if (!videoFile && filesProcessed === 1) {
+                DB.saveProp(prop);
+                clearPropertyForm();
+                loadAgentProps();
+                toggleAddForm();
+            } else if (videoFile && filesProcessed === 2) {
+                DB.saveProp(prop);
+                clearPropertyForm();
+                loadAgentProps();
+                toggleAddForm();
+            }
+        };
+        imgReader.readAsDataURL(imageFile);
+
+        if (videoFile) {
+            var vidReader = new FileReader();
+            vidReader.onload = function(e) {
+                prop.video = e.target.result;
+                filesProcessed++;
+                if (filesProcessed === 2) {
+                    DB.saveProp(prop);
+                    clearPropertyForm();
+                    loadAgentProps();
+                    toggleAddForm();
+                }
+            };
+            vidReader.readAsDataURL(videoFile);
+        }
+    }
+
+    function clearPropertyForm() {
+        document.getElementById('propTitle').value = '';
+        document.getElementById('propLocation').value = '';
+        document.getElementById('propPrice').value = '';
+        document.getElementById('propBeds').value = '';
+        document.getElementById('propBaths').value = '';
+        document.getElementById('propDesc').value = '';
+        document.getElementById('propImage').value = '';
+        document.getElementById('propVideo').value = '';
+    }
+
+    function loadAgentProps() {
+        var props = DB.getAgentProps(currentUser.uid);
+        var html = '';
+
+        document.getElementById('propCount').textContent = props.length;
+
+        for (var i = 0; i < props.length; i++) {
+            var p = props[i];
+            var img = p.image ? '<img src="' + p.image + '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 1rem;">' : '';
+            var vid = p.video ? '<p style="color: #27ae60; font-weight: bold;">✓ Video Uploaded</p>' : '';
+            html = html + '<div class="card">' + img + '<h3>' + p.title + '</h3><p>📍 ' + p.location + '</p><p class="price">₦' + p.price.toLocaleString() + '</p><p>🛏️ ' + p.bedrooms + ' bed | 🚿 ' + p.bathrooms + ' bath</p><p>' + p.description + '</p>' + vid + '</div>';
+        }
+
+        document.getElementById('agentList').innerHTML = html || '<p>No properties listed yet</p>';
+    }
+
+    function loadAllProps() {
+        allProperties = DB.getProps();
+        filterProps();
+    }
+
+    function filterProps() {
+        var loc = document.getElementById('filterLoc').value.toLowerCase();
+        var minP = document.getElementById('filterMin').value || 0;
+        var maxP = document.getElementById('filterMax').value || 999999999;
+        var beds = document.getElementById('filterBeds').value;
+
+        var filtered = [];
+        for (var i = 0; i < allProperties.length; i++) {
+            var p = allProperties[i];
+            var matchLoc = !loc || p.location.toLowerCase().indexOf(loc) !== -1;
+            var matchPrice = p.price >= minP && p.price <= maxP;
+            var matchBeds = !beds || p.bedrooms == beds;
+
+            if (matchLoc && matchPrice && matchBeds) {
+                filtered.push(p);
+            }
+        }
+
+        var html = '';
+        for (var i = 0; i < filtered.length; i++) {
+            var p = filtered[i];
+            var img = p.image ? '<img src="' + p.image + '" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 1rem;">' : '';
+            var vid = p.video ? '<p style="color: #27ae60; font-weight: bold;">📹 Video Available</p>' : '';
+            var verifyBadge = p.agentVerified ? '<span class="agent-badge verified">✓ Verified</span>' : '<span class="agent-badge unverified">⚠️ Unverified</span>';
+            html = html + '<div class="card">' + img + '<h3>' + p.title + '</h3><p>📍 ' + p.location + '</p><p class="price">₦' + p.price.toLocaleString() + '</p><p>🛏️ ' + p.bedrooms + ' bed | 🚿 ' + p.bathrooms + ' bath</p><p><strong>Agent:</strong> ' + p.agentName + verifyBadge + '</p><p>' + p.description + '</p>' + vid + '</div>';
+        }
+
+        document.getElementById('renterList').innerHTML = html || '<p>No properties found</p>';
+    }
+
+    // MODALS
+    function showUpgradeModal() {
+        document.getElementById('upgradeModal').classList.add('show');
+    }
+
+    function closeUpgradeModal() {
+        document.getElementById('upgradeModal').classList.remove('show');
+    }
+
+    // LOGOUT
+    function logout() {
+        currentUser = null;
+        currentType = null;
+        showHome();
+    }
+
+    function showError(elementId, message) {
+        var el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(function() {
+                el.classList.remove('show');
+            }, 5000);
+        }
+    }
+</script>
+```
+
+</body>
+</html>
